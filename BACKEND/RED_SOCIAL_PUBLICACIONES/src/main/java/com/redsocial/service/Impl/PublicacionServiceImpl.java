@@ -1,5 +1,7 @@
 package com.redsocial.service.Impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.redsocial.model.Comentario;
 import com.redsocial.model.Publicacion;
 import com.redsocial.repository.ComentarioRepository;
@@ -9,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PublicacionServiceImpl implements PublicacionService {
@@ -19,6 +23,9 @@ public class PublicacionServiceImpl implements PublicacionService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private Cloudinary cloudinary;
 
     @Override
     public List<Publicacion> obtenerTodasPublicaciones() {
@@ -36,9 +43,8 @@ public class PublicacionServiceImpl implements PublicacionService {
         publicacion.setTitulo(titulo);
         publicacion.setContenido(contenido);
         if (imagen != null) {
-            // Aquí puedes agregar la lógica para guardar la imagen en un servicio de almacenamiento (como Cloudinary)
-            // y luego guardar la URL de la imagen en la publicación
-            publicacion.setImagenUrl("URL_DE_LA_IMAGEN");
+            String imagenUrl = guardarImagenEnCloudinary(imagen);
+            publicacion.setImagenUrl(imagenUrl);
         }
         return publicacionRepository.save(publicacion);
     }
@@ -50,9 +56,8 @@ public class PublicacionServiceImpl implements PublicacionService {
             publicacion.setTitulo(titulo);
             publicacion.setContenido(contenido);
             if (imagen != null) {
-                // Aquí puedes agregar la lógica para guardar la imagen en un servicio de almacenamiento (como Cloudinary)
-                // y luego actualizar la URL de la imagen en la publicación
-                publicacion.setImagenUrl("URL_DE_LA_IMAGEN");
+                String imagenUrl = guardarImagenEnCloudinary(imagen);
+                publicacion.setImagenUrl(imagenUrl);
             }
             return publicacionRepository.save(publicacion);
         }
@@ -101,5 +106,24 @@ public class PublicacionServiceImpl implements PublicacionService {
             }
         }
         return null;
+    }
+
+    @Override
+    public List<Comentario> obtenerComentariosPorPublicacionId(Long publicacionId) {
+        Publicacion publicacion = publicacionRepository.findById(publicacionId).orElse(null);
+        if (publicacion != null) {
+            return publicacion.getComentarios();
+        }
+        return null;
+    }
+
+    private String guardarImagenEnCloudinary(MultipartFile imagen) {
+        try {
+            Map uploadResult = cloudinary.uploader().upload(imagen.getBytes(), ObjectUtils.emptyMap());
+            return uploadResult.get("url").toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

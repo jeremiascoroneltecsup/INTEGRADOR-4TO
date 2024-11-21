@@ -1,5 +1,6 @@
 package com.redsocial.controller;
 
+import com.redsocial.model.Comentario;
 import com.redsocial.model.Publicacion;
 import com.redsocial.service.PublicacionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1" +
-        "/publicaciones")
+@RequestMapping("/api/v1/publicaciones")
 @CrossOrigin(origins = "http://localhost:3000")  // Permite el acceso desde el frontend en React
 public class PublicacionController {
 
@@ -40,12 +40,6 @@ public class PublicacionController {
             @RequestParam("titulo") String titulo,
             @RequestParam("contenido") String contenido,
             @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
-        System.out.println("Título: " + titulo);
-        System.out.println("Contenido: " + contenido);
-        if (imagen != null) {
-            System.out.println("Nombre de la imagen: " + imagen.getOriginalFilename());
-        }
-
         Publicacion publicacion = publicacionService.crearPublicacion(titulo, contenido, imagen);
         return new ResponseEntity<>(publicacion, HttpStatus.CREATED);
     }
@@ -105,5 +99,11 @@ public class PublicacionController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/{publicacionId}/comentarios")
+    public ResponseEntity<List<Comentario>> obtenerComentariosPorPublicacionId(@PathVariable Long publicacionId) {
+        List<Comentario> comentarios = publicacionService.obtenerComentariosPorPublicacionId(publicacionId);
+        return new ResponseEntity<>(comentarios, HttpStatus.OK);
     }
 }

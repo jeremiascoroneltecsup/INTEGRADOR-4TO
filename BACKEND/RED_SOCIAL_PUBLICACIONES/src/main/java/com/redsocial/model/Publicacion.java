@@ -1,6 +1,5 @@
 package com.redsocial.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,6 +29,5 @@ public class Publicacion {
 
     // Relación One-to-Many con Comentario
     @OneToMany(mappedBy = "publicacion", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
     private List<Comentario> comentarios;
 }
